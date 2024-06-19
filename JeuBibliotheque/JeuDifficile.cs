@@ -190,51 +190,51 @@ namespace JeuBibliotheque
 
         private List<Point> TrouverChemin(Point depart, Point arrivee)
         {
-            List<Node> openList = new List<Node>();
-            List<Node> closedList = new List<Node>();
+            List<Node> listeOuverte = new List<Node>();
+            List<Node> listeFermee = new List<Node>();
 
-            Node startNode = new Node(depart.X, depart.Y);
-            Node endNode = new Node(arrivee.X, arrivee.Y);
+            Node noeudDepart = new Node(depart.X, depart.Y);
+            Node noeudArrivee = new Node(arrivee.X, arrivee.Y);
 
-            openList.Add(startNode);
+            listeOuverte.Add(noeudDepart);
 
-            while (openList.Count > 0)
+            while (listeOuverte.Count > 0)
             {
-                Node currentNode = openList.OrderBy(n => n.F).First();
+                Node noeudActuel = listeOuverte.OrderBy(n => n.F).First();
 
-                if (currentNode.X == endNode.X && currentNode.Y == endNode.Y)
+                if (noeudActuel.X == noeudArrivee.X && noeudActuel.Y == noeudArrivee.Y)
                 {
                     // Construire et retourner le chemin trouvé
-                    List<Point> path = new List<Point>();
-                    Node node = currentNode;
-                    while (node != null)
+                    List<Point> chemin = new List<Point>();
+                    Node noeud = noeudActuel;
+                    while (noeud != null)
                     {
-                        path.Add(new Point(node.X, node.Y));
-                        node = node.Parent;
+                        chemin.Add(new Point(noeud.X, noeud.Y));
+                        noeud = noeud.Parent;
                     }
-                    path.Reverse();
-                    return path;
+                    chemin.Reverse();
+                    return chemin;
                 }
 
-                openList.Remove(currentNode);
-                closedList.Add(currentNode);
+                listeOuverte.Remove(noeudActuel);
+                listeFermee.Add(noeudActuel);
 
-                List<Node> neighbors = GetNeighbors(currentNode, endNode);
-                foreach (Node neighbor in neighbors)
+                List<Node> voisins = ObtenirVoisins(noeudActuel, noeudArrivee);
+                foreach (Node voisin in voisins)
                 {
-                    if (closedList.Any(n => n.X == neighbor.X && n.Y == neighbor.Y))
+                    if (listeFermee.Any(n => n.X == voisin.X && n.Y == voisin.Y))
                         continue;
 
-                    int tentativeG = currentNode.G + 1; // Coût de mouvement (1 dans ce cas)
+                    int tentativeG = noeudActuel.G + 1; // Coût de mouvement (1 dans ce cas)
 
-                    if (!openList.Any(n => n.X == neighbor.X && n.Y == neighbor.Y) || tentativeG < neighbor.G)
+                    if (!listeOuverte.Any(n => n.X == voisin.X && n.Y == voisin.Y) || tentativeG < voisin.G)
                     {
-                        neighbor.G = tentativeG;
-                        neighbor.H = Math.Abs(neighbor.X - endNode.X) + Math.Abs(neighbor.Y - endNode.Y);
-                        neighbor.Parent = currentNode;
+                        voisin.G = tentativeG;
+                        voisin.H = Math.Abs(voisin.X - noeudArrivee.X) + Math.Abs(voisin.Y - noeudArrivee.Y);
+                        voisin.Parent = noeudActuel;
 
-                        if (!openList.Any(n => n.X == neighbor.X && n.Y == neighbor.Y))
-                            openList.Add(neighbor);
+                        if (!listeOuverte.Any(n => n.X == voisin.X && n.Y == voisin.Y))
+                            listeOuverte.Add(voisin);
                     }
                 }
             }
@@ -242,9 +242,10 @@ namespace JeuBibliotheque
             return null; // Aucun chemin trouvé
         }
 
-        private List<Node> GetNeighbors(Node node, Node endNode)
+
+        private List<Node> ObtenirVoisins(Node noeud, Node noeudFinal)
         {
-            List<Node> neighbors = new List<Node>();
+            List<Node> voisins = new List<Node>();
 
             // Définition des directions (gauche, droite, haut, bas)
             Point[] directions = new Point[] {
@@ -256,18 +257,18 @@ namespace JeuBibliotheque
 
             foreach (Point direction in directions)
             {
-                int newX = node.X + direction.X;
-                int newY = node.Y + direction.Y;
+                int nouveauX = noeud.X + direction.X;
+                int nouveauY = noeud.Y + direction.Y;
 
                 // Vérifier si le voisin est dans la grille et accessible
-                if (EstDansLeLabyrinthe(new Point(newX, newY)) && labyrinthe[newY, newX] != 1)
+                if (EstDansLeLabyrinthe(new Point(nouveauX, nouveauY)) && labyrinthe[nouveauY, nouveauX] != 1)
                 {
-                    Node neighborNode = new Node(newX, newY);
-                    neighbors.Add(neighborNode);
+                    Node noeudVoisin = new Node(nouveauX, nouveauY);
+                    voisins.Add(noeudVoisin);
                 }
             }
 
-            return neighbors;
+            return voisins;
         }
 
 
